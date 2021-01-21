@@ -28,6 +28,102 @@
 
 通过的`common-container-root class`对样式的统一设置，使此问题不复存在，当然如果真的有定制化的需要，也可以通过传递`className`来覆写样式。
 
+## 示例代码
+
+### FetchingBox
+
+```tsx
+import axios from "axios";
+import React from "react";
+import FetchingBox from "../components/FetchingBox";
+
+interface IHomeData {
+  title?: string;
+  subTitle?: string;
+  content?: string;
+}
+
+export default function Home() {
+  // 两种写法都可以，效果一样
+
+  // return (
+  //   <FetchingBox loader={() => axios.get<IHomeData>("https://xxx.api/v1/home")}>
+  //     {(res) => <Home.Content {...res?.data} />}
+  //   </FetchingBox>
+  // );
+
+  return (
+    <FetchingBox<IHomeData> loader={() => axios.get("https://xxx.api/v1/home")}>
+      {(res) => <Home.Content {...res?.data} />}
+    </FetchingBox>
+  );
+}
+
+Home.Content = function ({ title, subTitle, content }: IHomeData) {
+  return (
+    <div>
+      <h1>{title}</h1>
+      <h3>{subTitle}</h3>
+      <article>{content}</article>
+    </div>
+  );
+};
+```
+
+### FetchStatusBox
+
+```tsx
+import axios from "axios";
+import React, { useCallback, useEffect, useState } from "react";
+import FetchStatusBox from "../components/FetchStatusBox";
+
+interface IAboutData {
+  avatar?: string;
+  name?: string;
+  location?: string;
+}
+
+export default function About() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error>();
+  const [data, setData] = useState<IAboutData>();
+
+  const doFetching = useCallback(async () => {
+    setLoading(true);
+
+    try {
+      const res = await axios.get<IAboutData>("https://xxx.api/v1/about");
+
+      setData(res.data);
+    } catch (error) {
+      setError(error);
+    }
+
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    doFetching();
+  }, [doFetching]);
+
+  return (
+    <FetchStatusBox loading={loading} error={error} onRetry={doFetching}>
+      <About.Content {...data} />
+    </FetchStatusBox>
+  );
+}
+
+About.Content = function ({ avatar, name, location }: IAboutData) {
+  return (
+    <div>
+      <img src={avatar} alt={name} />
+      <strong>{name}</strong>
+      <i>{location}</i>
+    </div>
+  );
+};
+```
+
 ## 优势和缺陷
 
 ### 优势
@@ -49,4 +145,4 @@
 
 后端接口的设计影响着前端模块的划分，有些页面不可避免的需要用到聚合性数据（多个接口的数据，有些团队会引入`Node层做BFF`处理此类情况，这又是另外一个话题了），但是对于大多数拆分的比较合理的模块、页面而言，单独处理和维护自身的请求状态都是比较合理的（高内聚）。
 
-最核心的还是要总结和提炼，运用好React的组件化思维。
+最核心的还是要总结和提炼，运用好 React 的组件化思维。
