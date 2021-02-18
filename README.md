@@ -137,6 +137,31 @@ About.Content = function ({ avatar, name, location }: IAboutData) {
 - 只能针对模块化比较强的组件或页面使用
 - 对于复杂的页面，需要多个请求的数据融合展示的不太友好
 
+## 函数式 Loading
+
+如下代码：
+
+```typescript
+function App() {
+  useEffect(() => {
+    Loading.toggle(true);
+
+    setTimeout(() => {
+      Loading.toggle(false);
+    }, 2000);
+  }, []);
+
+  return (
+    <div className="App">
+      <Home />
+      <About />
+    </div>
+  );
+}
+```
+
+函数式调用的好处就是灵活和逻辑分明，根据需要随时随地可以进行 loading 处理
+
 ## 结语
 
 从和产品沟通链接需求，到设计师出设计稿，再到前端和后端分别做设计，对页面功能的拆分，模块的划分，最后落实到代码层面，每一步都影响着最终产出的应用是不是一个设计良好，用户体验优良的产品。
